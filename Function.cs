@@ -74,11 +74,31 @@ namespace YandexCloudTest
             return document;
         }
 
-        static async Task Main()
+        static void Main()
         {
+            Console.WriteLine("");
+        }
+    }
+
+    public class Handler
+    {
+        public async Task<Response> FunctionHandler(Request request)
+        {
+            var jsonDoc = JsonDocument.Parse(request.body);
+            var root = jsonDoc.RootElement;
+
+            var login = root.GetProperty("login").GetString();
+            var password = root.GetProperty("password").GetString();
+            if (login != "test" || password != "testpass")
+            {
+                return new Response(403, JsonSerializer.Serialize(new { error = "Доступ запрещён" },
+                    new JsonSerializerOptions() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }));
+            }
+
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string jsonResponse = await GetAll();
-            Console.WriteLine(jsonResponse);
+            string jsonResponse = await Function.GetAll();
+
+            return new Response(200, jsonResponse);
         }
     }
 }
